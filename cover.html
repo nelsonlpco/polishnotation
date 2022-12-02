@@ -1,0 +1,376 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>domain: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/nelsonlpco/reversepolish/internal/domain/element.go (100.0%)</option>
+				
+				<option value="file1">github.com/nelsonlpco/reversepolish/internal/domain/expression.go (100.0%)</option>
+				
+				<option value="file2">github.com/nelsonlpco/reversepolish/internal/domain/hashmap.go (100.0%)</option>
+				
+				<option value="file3">github.com/nelsonlpco/reversepolish/internal/domain/stack.go (100.0%)</option>
+				
+				<option value="file4">github.com/nelsonlpco/reversepolish/reversepolish.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">no coverage</span>
+				<span class="cov1">low coverage</span>
+				<span class="cov2">*</span>
+				<span class="cov3">*</span>
+				<span class="cov4">*</span>
+				<span class="cov5">*</span>
+				<span class="cov6">*</span>
+				<span class="cov7">*</span>
+				<span class="cov8">*</span>
+				<span class="cov9">*</span>
+				<span class="cov10">high coverage</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package domain
+
+import "fmt"
+
+type Element rune
+
+var ErrorInvalidOperator = "%v is an invalid operator"
+
+var operators = []Element{'+', '-', '*', '/', '('}
+
+func (e Element) IsAnOperator() bool <span class="cov6" title="9">{
+        for _, op := range operators </span><span class="cov10" title="35">{
+                if op == e </span><span class="cov5" title="5">{
+                        return true
+                }</span>
+        }
+
+        <span class="cov4" title="4">return false</span>
+}
+
+func (e Element) IsAnOperand() bool <span class="cov7" title="14">{
+        return e &gt;= 'a' &amp;&amp; e &lt;= 'z' || e &gt;= 'A' &amp;&amp; e &lt;= 'Z'
+}</span>
+
+func GetOperatorPriority(element Element) (uint16, error) <span class="cov5" title="6">{
+        switch element </span>{
+        case '(':<span class="cov1" title="1">
+                return 1, nil</span>
+        case '+', '-':<span class="cov2" title="2">
+                return 2, nil</span>
+        case '*', '/':<span class="cov2" title="2">
+                return 3, nil</span>
+        }
+        <span class="cov1" title="1">return 0, fmt.Errorf(ErrorInvalidOperator, element)</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package domain
+
+import (
+        "strconv"
+        "strings"
+)
+
+type Expression struct {
+        value      string
+        simplified []Element
+        hashMap    *HashMap
+}
+
+func (e Expression) Expression() string <span class="cov1" title="1">{
+        return e.value
+}</span>
+
+func (e Expression) Simplified() []Element <span class="cov1" title="1">{
+        return e.simplified
+}</span>
+
+func (e Expression) HashMap() *HashMap <span class="cov1" title="1">{
+        return e.hashMap
+}</span>
+
+func NewExpression(expression string) *Expression <span class="cov2" title="2">{
+        return &amp;Expression{
+                value:      expression,
+                simplified: simplifyExpression(expression),
+                hashMap:    NewHashMap(expression),
+        }
+}</span>
+
+func simplifyExpression(expression string) []Element <span class="cov2" title="2">{
+        var simplifiedExpression string
+        var operand Element = 'A'
+        isNumber := false
+        splitedExpression := strings.Split(expression, "")
+
+        for _, element := range splitedExpression </span><span class="cov10" title="24">{
+                if _, err := strconv.Atoi(element); err != nil </span><span class="cov7" title="10">{
+                        simplifiedExpression += element
+                        isNumber = false
+                }</span> else<span class="cov8" title="14"> {
+                        if !isNumber </span><span class="cov7" title="10">{
+                                simplifiedExpression += string(operand)
+                                operand++
+                        }</span>
+                        <span class="cov8" title="14">isNumber = true</span>
+                }
+        }
+
+        <span class="cov2" title="2">return []Element(simplifiedExpression)</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package domain
+
+import (
+        "strconv"
+        "strings"
+)
+
+type HashMap struct {
+        value map[Element]string
+}
+
+func (h HashMap) GetValue(i Element) float32 <span class="cov3" title="4">{
+        if v, ok := h.value[i]; !ok </span><span class="cov1" title="1">{
+                return 0
+        }</span> else<span class="cov3" title="3"> {
+                result, err := strconv.ParseFloat(v, 32)
+                if err != nil </span><span class="cov1" title="1">{
+                        return 0
+                }</span>
+
+                <span class="cov2" title="2">return float32(result)</span>
+        }
+}
+
+func NewHashMap(expression string) *HashMap <span class="cov4" title="7">{
+        var hashMap = make(map[Element]string)
+
+        var Element Element = 'A'
+
+        splitedExpression := strings.Split(expression, "")
+        expressionSize := len(splitedExpression)
+        var numberElement string
+
+        for expressionIndex := 0; expressionIndex &lt; expressionSize; expressionIndex++ </span><span class="cov10" title="109">{
+                element := splitedExpression[expressionIndex]
+                if _, err := strconv.Atoi(element); err == nil </span><span class="cov9" title="69">{
+                        numberElement += element
+                }</span> else<span class="cov8" title="40"> if numberElement != "" </span><span class="cov7" title="33">{
+                        hashMap[Element] = numberElement
+                        numberElement = ""
+                        Element++
+                }</span>
+        }
+
+        <span class="cov4" title="7">if numberElement != "" </span><span class="cov2" title="2">{
+                hashMap[Element] = numberElement
+        }</span>
+
+        <span class="cov4" title="7">return &amp;HashMap{value: hashMap}</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package domain
+
+type Stack[T comparable] struct {
+        data   []T
+        length int
+}
+
+func (s *Stack[T]) Length() int <span class="cov7" title="5">{
+        return s.length
+}</span>
+
+func (s Stack[T]) Value() T <span class="cov1" title="1">{
+        return s.data[s.length-1]
+}</span>
+
+func NewStack[T comparable]() *Stack[T] <span class="cov6" title="4">{
+        return &amp;Stack[T]{length: 0}
+}</span>
+
+func (s *Stack[T]) Push(element T) <span class="cov10" title="9">{
+        s.data = append(s.data, element)
+        s.length++
+}</span>
+
+func (s *Stack[T]) Pop() T <span class="cov5" title="3">{
+        element := s.data[s.length-1]
+
+        s.length--
+        s.data = s.data[:s.length]
+
+        return element
+}</span>
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package reversepolish
+
+import (
+        "fmt"
+        "github.com/nelsonlpco/reversepolish/internal/domain"
+)
+
+type Manager struct {
+        expression *domain.Expression
+}
+
+func (m *Manager) Resolve(mathExpression string) float32 <span class="cov4" title="4">{
+        expression := domain.NewExpression(mathExpression)
+        postFixedExpression := postFixExpression(expression.Simplified())
+
+        fmt.Print(string(postFixedExpression))
+
+        operationStack := domain.NewStack[float32]()
+        for _, element := range postFixedExpression </span><span class="cov8" title="28">{
+                if element.IsAnOperand() </span><span class="cov7" title="16">{
+                        operationStack.Push(expression.HashMap().GetValue(element))
+                }</span> else<span class="cov6" title="12"> {
+                        y := operationStack.Pop()
+                        x := operationStack.Pop()
+
+                        switch element </span>{
+                        case '+':<span class="cov3" title="3">
+                                operationStack.Push(x + y)</span>
+                        case '-':<span class="cov1" title="1">
+                                operationStack.Push(x - y)</span>
+                        case '*':<span class="cov4" title="6">
+                                operationStack.Push(x * y)</span>
+                        case '/':<span class="cov2" title="2">
+                                operationStack.Push(x / y)</span>
+                        }
+                }
+        }
+
+        <span class="cov4" title="4">return operationStack.Pop()</span>
+}
+
+func NewReversePolishManager() *Manager <span class="cov4" title="5">{
+        return &amp;Manager{}
+}</span>
+
+func postFixExpression(simplifiedExpression []domain.Element) []domain.Element <span class="cov5" title="8">{
+        var postFixedExpression string
+        var currentOperatorPriority uint16
+        priorityStack := domain.NewStack[domain.PriorityModel]()
+
+        for _, element := range simplifiedExpression </span><span class="cov10" title="64">{
+                if element.IsAnOperand() </span><span class="cov8" title="32">{
+                        postFixedExpression += string(element)
+                }</span> else<span class="cov8" title="32"> if element.IsAnOperator() </span><span class="cov8" title="28">{
+                        currentOperatorPriority, _ = domain.GetOperatorPriority(element)
+
+                        if priorityStack.Length() &gt; 0 &amp;&amp; priorityStack.Value().Priority &gt;= currentOperatorPriority &amp;&amp; element != '(' </span><span class="cov4" title="4">{
+                                current := priorityStack.Pop()
+                                postFixedExpression += string(current.Element)
+                        }</span>
+
+                        <span class="cov8" title="28">priorityStack.Push(domain.PriorityModel{Priority: currentOperatorPriority, Element: element})</span>
+                } else<span class="cov4" title="4"> if element == ')' </span><span class="cov4" title="4">{
+                        item := priorityStack.Pop()
+                        for item.Element != '(' </span><span class="cov4" title="4">{
+                                postFixedExpression += string(item.Element)
+                                item = priorityStack.Pop()
+                        }</span>
+                }
+        }
+
+        <span class="cov5" title="8">for priorityStack.Length() &gt; 0 </span><span class="cov7" title="16">{
+                postFixedExpression += string(priorityStack.Pop().Element)
+        }</span>
+
+        <span class="cov5" title="8">return []domain.Element(postFixedExpression)</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
